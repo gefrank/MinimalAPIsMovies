@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
+using MinimalAPIsMovies.DTOs;
 using MinimalAPIsMovies.Entities;
 using MinimalAPIsMovies.Repositories;
 using System.Runtime.CompilerServices;
@@ -24,40 +26,57 @@ namespace MinimalAPIsMovies.Endpoints
             return group;   
         }
 
-        static async Task<Ok<List<Genre>>> GetGenres(IGenresRepository repository)
+        static async Task<Ok<List<GenreDTO>>> GetGenres(IGenresRepository repository, IMapper mapper)
         {
             var genres = await repository.GetAll();
+            // AutoMapper is a library that simplifies the mapping of objects from one type to another
+            var genresDTO = mapper.Map<List<GenreDTO>>(genres);
             // TypedResults is a helper class that simplifies the return of typed results, and work better with swagger
-            return TypedResults.Ok(genres);
+            return TypedResults.Ok(genresDTO);
         }
 
         /// Results can either be Ok with the Genre or NotFound
-        static async Task<Results<Ok<Genre>, NotFound>> GetById(int id, IGenresRepository repository)
+        static async Task<Results<Ok<GenreDTO>, NotFound>> GetById(int id, IGenresRepository repository, IMapper mapper)
         {
             var genre = await repository.GetById(id);
             if (genre is null)
             {
                 return TypedResults.NotFound();
             }
-            return TypedResults.Ok(genre);
+
+            var genreDTO = mapper.Map<GenreDTO>(genre);
+
+            return TypedResults.Ok(genreDTO);
         }
 
-        static async Task<Created<Genre>> Create(Genre genre, IGenresRepository repository,
-            IOutputCacheStore outputCacheStore)
+        static async Task<Created<GenreDTO>> Create(CreateGenreDTO createGenreDTO,
+            IGenresRepository repository,
+            IOutputCacheStore outputCacheStore, 
+            IMapper mapper)
         {
+            var genre = mapper.Map<Genre>(createGenreDTO);
+
             var id = await repository.Create(genre);
             await outputCacheStore.EvictByTagAsync("genres-get", default); // Evict the cache for the "genres-get" tag, forcing the next request to re-fetch the data
-            return TypedResults.Created($"/genres/{id}", genre);
+
+            var genreDTO = mapper.Map<GenreDTO>(genre);
+
+            return TypedResults.Created($"/genres/{id}", genreDTO);
         }
 
-        static async Task<Results<NotFound, NoContent>> Update(int id, Genre genre, IGenresRepository repository,
-            IOutputCacheStore outputCacheStore)
+        static async Task<Results<NotFound, NoContent>> Update(int id, CreateGenreDTO createGenreDTO, IGenresRepository repository,
+            IOutputCacheStore outputCacheStore, 
+            IMapper mapper)
         {
             var exists = await repository.Exists(id);
             if (!exists)
             {
                 return TypedResults.NotFound();
             }
+
+            var genre = mapper.Map<Genre>(createGenreDTO);
+            genre.Id = id;
+
             await repository.Update(genre);
             await outputCacheStore.EvictByTagAsync("genres-get", default);
             return TypedResults.NoContent();

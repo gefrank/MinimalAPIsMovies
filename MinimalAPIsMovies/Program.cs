@@ -56,6 +56,7 @@ builder.Services.AddSwaggerGen();
 // of the repository, avoiding potential issues with shared state across requests.
 builder.Services.AddScoped<IGenresRepository, GenresRepository>(); // AddScoped creates a new instance of the repository for each request
 
+builder.Services.AddAutoMapper(typeof(Program)); // Add AutoMapper to the services collection and look for conigurations automatically
 
 // Services Zone - END
 
