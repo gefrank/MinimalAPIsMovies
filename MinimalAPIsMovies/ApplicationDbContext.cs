@@ -17,16 +17,20 @@ namespace MinimalAPIsMovies
             base.OnModelCreating(modelBuilder);
 
             // Configure fluent API rules here
-            modelBuilder.Entity<Genre>().Property(genre => genre.Name).HasMaxLength(150);
+            modelBuilder.Entity<Genre>().Property(x => x.Name).HasMaxLength(150);
 
-            modelBuilder.Entity<Actor>().Property(actor => actor.Name).HasMaxLength(150);
-            modelBuilder.Entity<Actor>().Property(actor => actor.Picture).IsUnicode(false);
+            modelBuilder.Entity<Actor>().Property(x => x.Name).HasMaxLength(150);
+            modelBuilder.Entity<Actor>().Property(x => x.Picture).IsUnicode(false);
+
+            modelBuilder.Entity<Movie>().Property(x => x.Title).HasMaxLength(250);
+            modelBuilder.Entity<Movie>().Property(x => x.Poster).IsUnicode(false);
         }
 
         // DbSet is a collection of entities that can be queried
         // The DbSet property is used to query and save instances of the Genre class   
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Actor> Actors { get; set; }
+        public DbSet<Movie> Movies { get; set; }
 
     }
 }
