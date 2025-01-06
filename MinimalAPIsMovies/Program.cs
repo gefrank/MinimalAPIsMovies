@@ -7,6 +7,7 @@ using MinimalAPIsMovies.Endpoints;
 using MinimalAPIsMovies.Entities;
 using MinimalAPIsMovies.Migrations;
 using MinimalAPIsMovies.Repositories;
+using MinimalAPIsMovies.Services;
 using System.Runtime.CompilerServices;
 
 
@@ -54,7 +55,14 @@ builder.Services.AddSwaggerGen();
 // This means that for each HTTP request, a new instance of GenresRepository will be created and used for the duration of that request.
 // This is particularly useful for services that interact with a database context, as it ensures that each request gets its own instance
 // of the repository, avoiding potential issues with shared state across requests.
-builder.Services.AddScoped<IGenresRepository, GenresRepository>(); // AddScoped creates a new instance of the repository for each request
+// AddScoped creates a new instance of the repository for each request
+builder.Services.AddScoped<IGenresRepository, GenresRepository>(); 
+builder.Services.AddScoped<IActorsRepository, ActorsRepository>();
+
+// AddTransient creates a new instance of the service each time it is requested
+builder.Services.AddTransient<IFileStorage, LocalFileStorage>(); // Register the InAppStorage class as the implementation for the IFileStorage interface
+builder.Services.AddHttpContextAccessor(); // So IFileStorage can access the HttpContext via injection
+
 
 builder.Services.AddAutoMapper(typeof(Program)); // Add AutoMapper to the services collection and look for conigurations automatically
 
@@ -67,6 +75,8 @@ var app = builder.Build();
 // Enable middleware to serve generated Swagger as a JSON endpoint
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseStaticFiles(); // Enable static files to be served
 
 // Apply CORS before any other middleware so that it will be available to the endpoints defined below
 app.UseCors();
@@ -84,6 +94,7 @@ app.MapGet("/", () => "Hello World!"); // No caching for this endpoint
 // defines in a single place all the endpoints for the Genres resource
 // Also Swagger will separate the endpoints in the documentation
 app.MapGroup("/genres").MapGenres();
+app.MapGroup("/actors").MapActors();
 
 
 // Middleware Zone - END

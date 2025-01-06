@@ -1,4 +1,4 @@
-﻿namespace MinimalAPIsMovies.Endpoints
+﻿namespace MinimalAPIsMovies.DTOs
 {
     /// <summary>
     /// DTOs allow your entities to evolve without affecting the contract of your API.

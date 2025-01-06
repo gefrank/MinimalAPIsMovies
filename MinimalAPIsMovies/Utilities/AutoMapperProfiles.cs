@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MinimalAPIsMovies.DTOs;
-using MinimalAPIsMovies.Endpoints;
 using MinimalAPIsMovies.Entities;
 
 namespace MinimalAPIsMovies.Utilities
@@ -14,6 +13,10 @@ namespace MinimalAPIsMovies.Utilities
         {
             CreateMap<Genre, GenreDTO>();
             CreateMap<CreateGenreDTO, Genre>();
+
+            CreateMap<Actor, ActorDTO>();
+            // This is to ignore the Picture property when mapping from CreateActorDTO to Actor
+            CreateMap<CreateActorDTO, Actor>().ForMember(x=>x.Picture, options => options.Ignore());
         }
     }
 }
