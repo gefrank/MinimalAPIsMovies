@@ -9,7 +9,7 @@ using MinimalAPIsMovies.Migrations;
 using MinimalAPIsMovies.Repositories;
 using MinimalAPIsMovies.Services;
 using System.Runtime.CompilerServices;
-
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +70,9 @@ builder.Services.AddHttpContextAccessor(); // So IFileStorage can access the Htt
 
 
 builder.Services.AddAutoMapper(typeof(Program)); // Add AutoMapper to the services collection and look for conigurations automatically
+
+// AddValidatorsFromAssemblyContaining will scan the assembly containing the Program class for classes
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 // Services Zone - END
 
