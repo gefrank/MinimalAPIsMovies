@@ -62,6 +62,7 @@ builder.Services.AddScoped<IActorsRepository, ActorsRepository>();
 // This approach allows you to replace the implementation of an interface in the DI container without changing
 // the dependent code, promoting loose coupling and flexibility.
 builder.Services.AddScoped<IMoviesRepository, MoviesRepository>();
+builder.Services.AddScoped<ICommentsRepository, CommentsRepository>();
 
 // AddTransient creates a new instance of the service each time it is requested
 builder.Services.AddTransient<IFileStorage, LocalFileStorage>(); // Register the InAppStorage class as the implementation for the IFileStorage interface
@@ -100,6 +101,8 @@ app.MapGet("/", () => "Hello World!"); // No caching for this endpoint
 app.MapGroup("/genres").MapGenres();
 app.MapGroup("/actors").MapActors();
 app.MapGroup("/movies").MapMovies();
+// movieId will be passed as a parameter to the comments endpoints
+app.MapGroup("/movie/{movieId:int}/comments").MapComments();
 
 
 // Middleware Zone - END
