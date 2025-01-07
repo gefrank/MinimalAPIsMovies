@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MinimalAPIsMovies;
 
@@ -11,9 +12,11 @@ using MinimalAPIsMovies;
 namespace MinimalAPIsMovies.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250107163955_GenresMovies")]
+    partial class GenresMovies
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -142,13 +145,13 @@ namespace MinimalAPIsMovies.Migrations
             modelBuilder.Entity("MinimalAPIsMovies.Entities.GenreMovie", b =>
                 {
                     b.HasOne("MinimalAPIsMovies.Entities.Genre", "Genre")
-                        .WithMany("GenresMovies")
+                        .WithMany("Genres")
                         .HasForeignKey("GenreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("MinimalAPIsMovies.Entities.Movie", "Movie")
-                        .WithMany("GenresMovies")
+                        .WithMany("Genres")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -160,14 +163,14 @@ namespace MinimalAPIsMovies.Migrations
 
             modelBuilder.Entity("MinimalAPIsMovies.Entities.Genre", b =>
                 {
-                    b.Navigation("GenresMovies");
+                    b.Navigation("Genres");
                 });
 
             modelBuilder.Entity("MinimalAPIsMovies.Entities.Movie", b =>
                 {
                     b.Navigation("Comments");
 
-                    b.Navigation("GenresMovies");
+                    b.Navigation("Genres");
                 });
 #pragma warning restore 612, 618
         }

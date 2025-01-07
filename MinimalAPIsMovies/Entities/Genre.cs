@@ -18,6 +18,7 @@ namespace MinimalAPIsMovies.Entities
         // would need this for validation purposes.
 
         public string Name { get; set; } = null!;
+        public List<GenreMovie> GenresMovies { get; set; } = new List<GenreMovie>();
     }
 }
 

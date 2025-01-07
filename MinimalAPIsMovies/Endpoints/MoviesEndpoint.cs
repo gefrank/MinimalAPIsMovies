@@ -22,6 +22,7 @@ namespace MinimalAPIsMovies.Endpoints
             group.MapPost("/", Create).DisableAntiforgery();
             group.MapPut("/{id:int}", Update).DisableAntiforgery();
             group.MapDelete("/{id:int}", Delete);
+            group.MapPost("/{id:int}/assignGenres", AssignGenres);
             return group;
         }
 
@@ -108,5 +109,35 @@ namespace MinimalAPIsMovies.Endpoints
             await outputCacheStore.EvictByTagAsync("movies-get", default);
             return TypedResults.NoContent();
         }
+
+        static async Task<Results<NoContent, NotFound, BadRequest<string>>> AssignGenres
+            (int id, List<int> genresIds, 
+            IMoviesRepository moviesRepository, IGenresRepository genresRepository)
+        {
+            if (!await moviesRepository.Exists(id))
+            {
+                return TypedResults.NotFound();
+            }
+
+            var existingGenres = new List<int>();
+
+            if (genresIds.Count != 0)
+            {
+                existingGenres = await genresRepository.Exists(genresIds);
+            }
+
+            if (existingGenres.Count != genresIds.Count)
+            {
+                var nonExistingGenres = genresIds.Except(existingGenres);
+                var nonExistingGenresCSV = string.Join(", ", nonExistingGenres);
+                return TypedResults.BadRequest($"Genres with ids {string.Join(", ", nonExistingGenresCSV)} do not exist.");
+            }
+
+            await moviesRepository.Assign(id, genresIds);
+            return TypedResults.NoContent();
+
+        }
+
+
     }
 }
