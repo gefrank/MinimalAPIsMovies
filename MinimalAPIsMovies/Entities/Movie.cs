@@ -10,6 +10,7 @@
 
         // creates one to many relationship between Movie and Comment
         public List<Comment> Comments { get; set; } = new List<Comment>();
-        public List<GenreMovie> GenresMovies { get; set; } = new List<GenreMovie>();   
+        public List<GenreMovie> GenresMovies { get; set; } = new List<GenreMovie>();
+        public List<ActorMovie> ActorsMovies { get; set; } = new List<ActorMovie>();
     }
 }

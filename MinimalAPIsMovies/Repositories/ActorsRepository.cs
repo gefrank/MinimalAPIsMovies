@@ -41,6 +41,11 @@ namespace MinimalAPIsMovies.Repositories
             return await context.Actors.AnyAsync(x => x.Id == id);
         }
 
+        public async Task<List<int>> Exists(List<int> ids)
+        {
+            return await context.Actors.Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync();
+        }
+
         public async Task Update(Actor actor)
         {
             context.Actors.Update(actor);
@@ -51,6 +56,8 @@ namespace MinimalAPIsMovies.Repositories
         {
             await context.Actors.Where(x=> x.Id == id).ExecuteDeleteAsync();
         }
+
+
 
     }
 }

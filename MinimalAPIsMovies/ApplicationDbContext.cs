@@ -27,6 +27,7 @@ namespace MinimalAPIsMovies
 
             // define the composite key for the GenreMovie table
             modelBuilder.Entity<GenreMovie>().HasKey(x => new { x.GenreId, x.MovieId });
+            modelBuilder.Entity<ActorMovie>().HasKey(x => new { x.ActorId, x.MovieId });
         }
 
         // DbSet is a collection of entities that can be queried
@@ -36,6 +37,7 @@ namespace MinimalAPIsMovies
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<GenreMovie> GenreMovies { get; set; }
+        public DbSet<ActorMovie> ActorMovies { get; set; }
 
     }
 }

@@ -26,6 +26,10 @@ namespace MinimalAPIsMovies.Repositories
         {
             return await context.Movies
                 .Include(x => x.Comments)
+                .Include(x => x.GenresMovies)
+                .ThenInclude(x => x.Genre)
+                .Include(x => x.ActorsMovies.OrderBy(x => x.Order))
+                .ThenInclude(x => x.Actor)
                 .AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         }
 
@@ -66,6 +70,27 @@ namespace MinimalAPIsMovies.Repositories
             //	Adding new genres that are in the new list.
             //	Updating existing genres.
             movie.GenresMovies = mapper.Map(genresMovies, movie.GenresMovies);
+
+            await context.SaveChangesAsync();
+
+        }
+
+        public async Task Assign(int id, List<ActorMovie> actors)
+        {
+            for (int i = 1; i <=actors.Count; i++)
+            {
+                actors[i-1].Order = i;
+            }
+
+            var movie = await context.Movies.Include(m => m.ActorsMovies)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (movie is null)
+            {
+                throw new ArgumentException($"There's no movie with id {id}");
+            }
+
+            movie.ActorsMovies = mapper.Map(actors, movie.ActorsMovies);
 
             await context.SaveChangesAsync();
 
