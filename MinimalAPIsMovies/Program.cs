@@ -58,6 +58,10 @@ builder.Services.AddSwaggerGen();
 // AddScoped creates a new instance of the repository for each request
 builder.Services.AddScoped<IGenresRepository, GenresRepository>(); 
 builder.Services.AddScoped<IActorsRepository, ActorsRepository>();
+// IMoviesRepository is registered with the MoviesRepository class as the implementation
+// This approach allows you to replace the implementation of an interface in the DI container without changing
+// the dependent code, promoting loose coupling and flexibility.
+builder.Services.AddScoped<IMoviesRepository, MoviesRepository>();
 
 // AddTransient creates a new instance of the service each time it is requested
 builder.Services.AddTransient<IFileStorage, LocalFileStorage>(); // Register the InAppStorage class as the implementation for the IFileStorage interface
@@ -95,6 +99,7 @@ app.MapGet("/", () => "Hello World!"); // No caching for this endpoint
 // Also Swagger will separate the endpoints in the documentation
 app.MapGroup("/genres").MapGenres();
 app.MapGroup("/actors").MapActors();
+app.MapGroup("/movies").MapMovies();
 
 
 // Middleware Zone - END

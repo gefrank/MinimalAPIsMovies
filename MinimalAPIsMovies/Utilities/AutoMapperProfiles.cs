@@ -17,6 +17,9 @@ namespace MinimalAPIsMovies.Utilities
             CreateMap<Actor, ActorDTO>();
             // This is to ignore the Picture property when mapping from CreateActorDTO to Actor
             CreateMap<CreateActorDTO, Actor>().ForMember(x=>x.Picture, options => options.Ignore());
+
+            CreateMap<Movie, MovieDTO>();
+            CreateMap<CreateMovieDTO, Movie>().ForMember(x => x.Poster, options => options.Ignore());
         }
     }
 }
