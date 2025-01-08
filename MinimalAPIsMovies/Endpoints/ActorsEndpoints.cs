@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using MinimalAPIsMovies.DTOs;
 using MinimalAPIsMovies.Entities;
+using MinimalAPIsMovies.Filters;
 using MinimalAPIsMovies.Repositories;
 using MinimalAPIsMovies.Services;
 
@@ -20,8 +21,8 @@ namespace MinimalAPIsMovies.Endpoints
             group.MapGet("/name/{name}", GetByName);
             group.MapGet("/{id:int}", GetById);
             // DisableAntiforgery is used to disable the antiforgery token validation for this endpoint, so that it works from a form
-            group.MapPost("/", Create).DisableAntiforgery();
-            group.MapPut("/{id:int}", Update).DisableAntiforgery();
+            group.MapPost("/", Create).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateActorDTO>>();
+            group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateActorDTO>>();
             group.MapDelete("/{id:int}", Delete);
             return group;
         }
@@ -60,16 +61,10 @@ namespace MinimalAPIsMovies.Endpoints
         }
 
 
-        static async Task<Results<Created<ActorDTO>, ValidationProblem>> Create([FromForm] CreateActorDTO createActorDTO,
+        static async Task<Created<ActorDTO>> Create([FromForm] CreateActorDTO createActorDTO,
                 IActorsRepository repository, IOutputCacheStore outputCacheStore, 
-                IMapper mapper, IFileStorage fileStorage, IValidator<CreateActorDTO> validator)
+                IMapper mapper, IFileStorage fileStorage)
         {
-            var validationResult = await validator.ValidateAsync(createActorDTO);   
-            if (!validationResult.IsValid)
-            {
-                return TypedResults.ValidationProblem(validationResult.ToDictionary());
-            }
-
             var actor = mapper.Map<Actor>(createActorDTO);
             if (createActorDTO.Picture is not null)
             {
