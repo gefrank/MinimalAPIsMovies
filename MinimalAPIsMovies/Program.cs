@@ -10,6 +10,7 @@ using MinimalAPIsMovies.Repositories;
 using MinimalAPIsMovies.Services;
 using System.Runtime.CompilerServices;
 using FluentValidation;
+using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +64,7 @@ builder.Services.AddScoped<IActorsRepository, ActorsRepository>();
 // the dependent code, promoting loose coupling and flexibility.
 builder.Services.AddScoped<IMoviesRepository, MoviesRepository>();
 builder.Services.AddScoped<ICommentsRepository, CommentsRepository>();
+builder.Services.AddScoped<IErrorsRepository, ErrorsRepository>();
 
 // AddTransient creates a new instance of the service each time it is requested
 builder.Services.AddTransient<IFileStorage, LocalFileStorage>(); // Register the InAppStorage class as the implementation for the IFileStorage interface
@@ -74,6 +76,9 @@ builder.Services.AddAutoMapper(typeof(Program)); // Add AutoMapper to the servic
 // AddValidatorsFromAssemblyContaining will scan the assembly containing the Program class for classes
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
+// Allows us to customize the response of the application when an exception is thrown
+builder.Services.AddProblemDetails();
+
 // Services Zone - END
 
 var app = builder.Build();
@@ -83,6 +88,28 @@ var app = builder.Build();
 // Enable middleware to serve generated Swagger as a JSON endpoint
 app.UseSwagger();
 app.UseSwaggerUI();
+
+// Enable exception handling middleware, this goes along with the AddProblemDetails service
+app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.Run(async context =>
+{
+    // Log Error to DB
+    var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
+    var exception = exceptionHandlerFeature?.Error!;
+
+    var error = new Error
+    {
+        ErrorMessage = exception.Message,
+        StackTrace = exception.StackTrace,
+        Date = DateTime.Now
+    };
+
+    // RequestServices is a property of HttpContext that provides access to the service container
+    var repository = context.RequestServices.GetRequiredService<IErrorsRepository>();
+    await repository.Create(error);
+
+    await Results.BadRequest(new {type= "error", message = "an unexpected exception has occurred", status=500 }).ExecuteAsync(context);
+})); 
+app.UseStatusCodePages(); // Enable status code pages middleware, this will return a page with the status code
 
 app.UseStaticFiles(); // Enable static files to be served
 
@@ -95,6 +122,10 @@ app.UseOutputCache();
 // Define the endpoints
 
 app.MapGet("/", () => "Hello World!"); // No caching for this endpoint
+app.MapGet("/error", () =>
+{
+    throw new Exception("This is an example exception");
+});
 
 // MapGroup: Define the genres endpoints, this is a group of endpoints that all start with /genres, and share the same base path
 // this makes it easier to manage the endpoints and keep them organized
