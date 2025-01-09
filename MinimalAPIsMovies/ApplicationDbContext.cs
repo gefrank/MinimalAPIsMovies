@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Abstractions;
 using MinimalAPIsMovies.Entities;
 
 namespace MinimalAPIsMovies
 {
-    public class ApplicationDbContext: DbContext
+    public class ApplicationDbContext: IdentityDbContext
     {
         // This will receive the DbContextOptions from the constructor of the Startup class
         public ApplicationDbContext(DbContextOptions options) : base(options)
@@ -28,6 +30,14 @@ namespace MinimalAPIsMovies
             // define the composite key for the GenreMovie table
             modelBuilder.Entity<GenreMovie>().HasKey(x => new { x.GenreId, x.MovieId });
             modelBuilder.Entity<ActorMovie>().HasKey(x => new { x.ActorId, x.MovieId });
+
+            modelBuilder.Entity<IdentityUser>().ToTable("Users");
+            modelBuilder.Entity<IdentityRole>().ToTable("Roles");
+            modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("RolesClaims");
+            modelBuilder.Entity<IdentityUserClaim<string>>().ToTable("UsersClaims");
+            modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("UsersLogins");
+            modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UsersRoles");
+            modelBuilder.Entity<IdentityUserToken<string>>().ToTable("UsersTokens");
         }
 
         // DbSet is a collection of entities that can be queried

@@ -11,6 +11,9 @@ using MinimalAPIsMovies.Services;
 using System.Runtime.CompilerServices;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using MinimalAPIsMovies.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,14 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddIdentityCore<IdentityUser>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+// UserManager and SignInManager are services that are used to manage users and sign-ins in ASP.NET Core Identity
+builder.Services.AddScoped<UserManager<IdentityUser>>();
+builder.Services.AddScoped<SignInManager<IdentityUser>>();
 
 // Add services to the container, so that they can be used in the application
 // CORS (Cross-Origin Resource Sharing) is a security mechanism that controls how web
@@ -79,6 +90,19 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 // Allows us to customize the response of the application when an exception is thrown
 builder.Services.AddProblemDetails();
 
+builder.Services.AddAuthentication().AddJwtBearer(x => 
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero,
+            IssuerSigningKeys = KeysHandler.GetAllRelevantKeys(builder.Configuration) // Allows you to use your own tokens as well as the ones submitted by the user, i.e. the user jwts tool.
+            //IssuerSigningKey = KeysHandler.GetKey(builder.Configuration).FirstOrDefault() // Use just your own tokens
+        });
+builder.Services.AddAuthorization();
+
 // Services Zone - END
 
 var app = builder.Build();
@@ -119,6 +143,8 @@ app.UseCors();
 // Apply output caching
 app.UseOutputCache();
 
+app.UseAuthorization();
+
 // Define the endpoints
 
 app.MapGet("/", () => "Hello World!"); // No caching for this endpoint
@@ -137,6 +163,7 @@ app.MapGroup("/actors").MapActors();
 app.MapGroup("/movies").MapMovies();
 // movieId will be passed as a parameter to the comments endpoints
 app.MapGroup("/movie/{movieId:int}/comments").MapComments();
+app.MapGroup("/users").MapUsers();
 
 
 // Middleware Zone - END

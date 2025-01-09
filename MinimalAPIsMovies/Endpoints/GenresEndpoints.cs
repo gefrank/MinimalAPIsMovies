@@ -20,7 +20,8 @@ namespace MinimalAPIsMovies.Endpoints
         public static RouteGroupBuilder MapGenres(this RouteGroupBuilder group) 
         {
             group.MapGet("/", GetGenres)
-                .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(15)).Tag("genres-get")); // Tells this endpoint to cache the response for 15 seconds, and tag it with "genres-get" for easy eviction
+                .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(15)).Tag("genres-get")) // Tells this endpoint to cache the response for 15 seconds, and tag it with "genres-get" for easy eviction
+                .RequireAuthorization(); 
             // TestFilter is a custom filter that we created to test the endpoint filters
             //group.MapGet("/{id:int}", GetById).AddEndpointFilter<TestFilter>();
             group.MapGet("/{id:int}", GetById);
