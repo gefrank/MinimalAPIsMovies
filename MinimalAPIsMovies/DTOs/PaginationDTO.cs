@@ -34,8 +34,7 @@ namespace MinimalAPIsMovies.DTOs
         {
             // nameof(Page) = "Page"
             var page = context.ExtractValueOrDefault(nameof(Page), pageInitialValue);
-            var recordsPerPage = context.ExtractValueOrDefault(nameof(RecordsPerPage),
-                    recordsPerPageInitialValue);
+            var recordsPerPage = context.ExtractValueOrDefault(nameof(RecordsPerPage), recordsPerPageInitialValue);
 
             var response = new PaginationDTO
             {

@@ -3,11 +3,14 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 using MinimalAPIsMovies.DTOs;
 using MinimalAPIsMovies.Entities;
 using MinimalAPIsMovies.Filters;
 using MinimalAPIsMovies.Repositories;
 using MinimalAPIsMovies.Services;
+using MinimalAPIsMovies.Utilities;
 
 namespace MinimalAPIsMovies.Endpoints
 {
@@ -17,7 +20,8 @@ namespace MinimalAPIsMovies.Endpoints
 
         public static RouteGroupBuilder MapActors(this RouteGroupBuilder group)
         {
-            group.MapGet("/", GetAll).CacheOutput(x => x.Expire(TimeSpan.FromSeconds(30)).Tag("actors-get"));
+            group.MapGet("/", GetAll).CacheOutput(x => x.Expire(TimeSpan.FromSeconds(30)).Tag("actors-get")).AddPaginationParameters();
+
             group.MapGet("/name/{name}", GetByName);
             group.MapGet("/{id:int}", GetById);
 
