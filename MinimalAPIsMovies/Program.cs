@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using MinimalAPIsMovies.Utilities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Models;
+using MinimalAPIsMovies.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +79,35 @@ builder.Services.AddSwaggerGen(options =>
             Url = new Uri("https://opensource.org/licenses/MIT")
         }
     });
+    // Add definition to be able to use the bearer token, in swagger
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {       
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header
+    });
+
+    options.OperationFilter<AuthorizationFilter>(); // Add the AuthorizationFilter to the swagger options
+
+    // We want to use bearer authentication for all the endpoints
+    // This was for every single endpoint, now we are using the AuthorizationFilter
+    //options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    //{
+    //    {
+    //        new OpenApiSecurityScheme
+    //        {
+    //            Reference = new OpenApiReference
+    //            {
+    //                Type = ReferenceType.SecurityScheme,
+    //                Id = "Bearer"
+    //            }
+    //        },
+    //        new string[] {}
+    //    }
+    //});
+
 });
 
 // Always reference the interface and not the implementation

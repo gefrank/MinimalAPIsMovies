@@ -26,8 +26,8 @@ namespace MinimalAPIsMovies.Endpoints
             group.MapGet("/{id:int}", GetById);
 
             // DisableAntiforgery is used to disable the antiforgery token validation for this endpoint, so that it works from a form
-            group.MapPost("/", Create).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateActorDTO>>().RequireAuthorization("isadmin");
-            group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateActorDTO>>().RequireAuthorization("isadmin"); ;
+            group.MapPost("/", Create).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateActorDTO>>().RequireAuthorization("isadmin").WithOpenApi();
+            group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateActorDTO>>().RequireAuthorization("isadmin").WithOpenApi(); 
             group.MapDelete("/{id:int}", Delete).RequireAuthorization("isadmin"); ;
             return group;
         }
