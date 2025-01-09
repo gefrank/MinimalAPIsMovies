@@ -59,7 +59,25 @@ builder.Services.AddOutputCache();
 
 // Set up the OpenAPI/Swagger generator
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new()
+    {
+        Title = "Movies API",
+        Description = "This is a web API for working with movie data",
+        Contact = new()
+        {
+            Name = "Gordy Frank",
+            Email = "gfrank@test.com",
+            Url = new Uri("https://www.test.com")
+        },
+        License = new Microsoft.OpenApi.Models.OpenApiLicense
+        {
+            Name = "MIT",
+            Url = new Uri("https://opensource.org/licenses/MIT")
+        }
+    });
+});
 
 // Always reference the interface and not the implementation
 // This is an example of the dependency injection pattern, depend on abstractions, not on concretions 

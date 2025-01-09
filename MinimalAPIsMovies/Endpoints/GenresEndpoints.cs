@@ -27,7 +27,19 @@ namespace MinimalAPIsMovies.Endpoints
             group.MapGet("/{id:int}", GetById);
 
             group.MapPost("/", Create).AddEndpointFilter<ValidationFilter<CreateGenreDTO>>().RequireAuthorization("isadmin");
-            group.MapPut("/{id:int}", Update).AddEndpointFilter<ValidationFilter<CreateGenreDTO>>().RequireAuthorization("isadmin");
+
+            group.MapPut("/{id:int}", Update)
+                .AddEndpointFilter<ValidationFilter<CreateGenreDTO>>()
+                .RequireAuthorization("isadmin")
+                .WithOpenApi(options =>
+                {
+                    options.Summary = "Update a genre";
+                    options.Description = "With this endpoint we can update a genre";
+                    options.Parameters[0].Description = "The id of the genre to update";
+                    options.RequestBody.Description = "The genre to update";
+                    return options;
+                });
+
             group.MapDelete("/{id:int}", Delete).RequireAuthorization("isadmin");
             return group;   
         }
