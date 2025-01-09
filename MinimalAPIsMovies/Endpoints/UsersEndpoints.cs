@@ -5,8 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Writers;
 using MinimalAPIsMovies.DTOs;
 using MinimalAPIsMovies.Filters;
+using MinimalAPIsMovies.Services;
 using MinimalAPIsMovies.Utilities;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 
 namespace MinimalAPIsMovies.Endpoints
@@ -20,6 +22,8 @@ namespace MinimalAPIsMovies.Endpoints
 
             group.MapPost("/makeadmin", MakeAdmin).AddEndpointFilter<ValidationFilter<EditClaimDTO>>().RequireAuthorization("isadmin");
             group.MapPost("/removeadmin", RemoveAdmin).AddEndpointFilter<ValidationFilter<EditClaimDTO>>().RequireAuthorization("isadmin");
+
+            group.MapGet("/renew", Renew).RequireAuthorization();   
             return group;
         }
 
@@ -98,6 +102,25 @@ namespace MinimalAPIsMovies.Endpoints
             return TypedResults.NoContent();
         }
 
+
+        static async Task<Results<NotFound, Ok<AuthenticationResponseDTO>>> Renew(
+            IUsersService usersService, IConfiguration configuration,
+            [FromServices] UserManager<IdentityUser> userManager)
+        {
+            var user = await usersService.GetUser();
+            if (user is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            var userCredential = new UserCredentialsDTO
+            {
+                Email = user.Email
+            };
+
+            var response = await BuildToken(userCredential, configuration, userManager);
+            return TypedResults.Ok(response);
+        }
 
         private async static Task<AuthenticationResponseDTO>
             BuildToken(UserCredentialsDTO userCredentialsDTO,
