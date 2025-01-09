@@ -20,8 +20,8 @@ namespace MinimalAPIsMovies.Endpoints
         public static RouteGroupBuilder MapGenres(this RouteGroupBuilder group) 
         {
             group.MapGet("/", GetGenres)
-                .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(15)).Tag("genres-get")) // Tells this endpoint to cache the response for 15 seconds, and tag it with "genres-get" for easy eviction
-                .RequireAuthorization(); 
+                .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(15)).Tag("genres-get")); // Tells this endpoint to cache the response for 15 seconds, and tag it with "genres-get" for easy eviction
+                //.RequireAuthorization(); 
             // TestFilter is a custom filter that we created to test the endpoint filters
             //group.MapGet("/{id:int}", GetById).AddEndpointFilter<TestFilter>();
             group.MapGet("/{id:int}", GetById);
@@ -32,8 +32,13 @@ namespace MinimalAPIsMovies.Endpoints
             return group;   
         }
 
-        static async Task<Ok<List<GenreDTO>>> GetGenres(IGenresRepository repository, IMapper mapper)
+        static async Task<Ok<List<GenreDTO>>> GetGenres(IGenresRepository repository, IMapper mapper, ILoggerFactory loggerFactory)
         {
+            var type = typeof(GenresEndpoints);
+            var logger = loggerFactory.CreateLogger(type.FullName!);
+            logger.LogTrace("This is a trace message");
+            logger.LogInformation("Getting the list of genres");
+
             var genres = await repository.GetAll();
             // AutoMapper is a library that simplifies the mapping of objects from one type to another
             var genresDTO = mapper.Map<List<GenreDTO>>(genres);
