@@ -15,8 +15,8 @@ namespace MinimalAPIsMovies.Endpoints
     {
         public static RouteGroupBuilder MapUsers(this RouteGroupBuilder group)
         {
-            group.MapPost("/register", Register)
-                .AddEndpointFilter<ValidationFilter<UserCredentialsDTO>>();
+            group.MapPost("/register", Register).AddEndpointFilter<ValidationFilter<UserCredentialsDTO>>();
+            group.MapPost("/login", Login).AddEndpointFilter<ValidationFilter<UserCredentialsDTO>>();
             return group;
         }
 
@@ -34,13 +34,38 @@ namespace MinimalAPIsMovies.Endpoints
 
             if (result.Succeeded)
             {
-                var authenticationResponse =
-                    await BuildToken(userCredentialsDTO, configuration, userManager);
+                var authenticationResponse = await BuildToken(userCredentialsDTO, configuration, userManager);
                 return TypedResults.Ok(authenticationResponse);
             }
             else
             {
                 return TypedResults.BadRequest(result.Errors);
+            }
+        }
+
+        static async Task<Results<Ok<AuthenticationResponseDTO>, BadRequest<string>>> Login(
+            UserCredentialsDTO userCredentialsDTO, 
+            [FromServices] SignInManager<IdentityUser> signInManager,
+            [FromServices] UserManager<IdentityUser> userManager,
+            IConfiguration configuration)
+        {
+            var user = await userManager.FindByEmailAsync(userCredentialsDTO.Email);
+            if (user is null)
+            {
+                // Be vague about the error
+                return TypedResults.BadRequest("There was a problem with the email or the password");
+            }
+
+            var results = await signInManager.CheckPasswordSignInAsync(user, userCredentialsDTO.Password, lockoutOnFailure: false);
+
+            if (results.Succeeded)
+            {
+                var authenticationResponse = await BuildToken(userCredentialsDTO, configuration, userManager);
+                return TypedResults.Ok(authenticationResponse);
+            }
+            else
+            {
+                return TypedResults.BadRequest("There was a problem with the email or the password");
             }
         }
 
