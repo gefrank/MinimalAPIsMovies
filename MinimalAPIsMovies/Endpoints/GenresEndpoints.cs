@@ -46,31 +46,41 @@ namespace MinimalAPIsMovies.Endpoints
             return TypedResults.Ok(genresDTO);
         }
 
-        /// Results can either be Ok with the Genre or NotFound
-        static async Task<Results<Ok<GenreDTO>, NotFound>> GetById(int id, IGenresRepository repository, IMapper mapper)
+        /// Results can either be Ok with the Genre or NotFound <summary>
+        /// This uses the GetGenreByIdRequestDTO using [AsParameters] to pass the parameters to the endpoint, instead of passing them directly
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        static async Task<Results<Ok<GenreDTO>, NotFound>> GetById([AsParameters] GetGenreByIdRequestDTO model)
         {
-            var genre = await repository.GetById(id);
+            var genre = await model.Repository.GetById(model.Id);
             if (genre is null)
             {
                 return TypedResults.NotFound();
             }
 
-            var genreDTO = mapper.Map<GenreDTO>(genre);
+            var genreDTO = model.Mapper.Map<GenreDTO>(genre);
 
             return TypedResults.Ok(genreDTO);
         }
 
+
+        /// <summary>
+        /// [AsParameters] is used to pass the parameters to the endpoint, instead of passing them directly
+        /// Note CreateGenreDTO cant be used as a parameter because it is a complex object
+        /// </summary>
+        /// <param name="createGenreDTO"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         static async Task<Created<GenreDTO>> Create(CreateGenreDTO createGenreDTO,
-            IGenresRepository repository,
-            IOutputCacheStore outputCacheStore, 
-            IMapper mapper)
+            [AsParameters] CreateGenreRequestDTO model )
         {
-            var genre = mapper.Map<Genre>(createGenreDTO);
+            var genre = model.Mapper.Map<Genre>(createGenreDTO);
 
-            var id = await repository.Create(genre);
-            await outputCacheStore.EvictByTagAsync("genres-get", default); // Evict the cache for the "genres-get" tag, forcing the next request to re-fetch the data
+            var id = await model.GenresRepository.Create(genre);
+            await model.OutputCacheStore.EvictByTagAsync("genres-get", default); // Evict the cache for the "genres-get" tag, forcing the next request to re-fetch the data
 
-            var genreDTO = mapper.Map<GenreDTO>(genre);
+            var genreDTO = model.Mapper.Map<GenreDTO>(genre);
 
             return TypedResults.Created($"/genres/{id}", genreDTO);
         }

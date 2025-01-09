@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using MinimalAPIsMovies.Utilities;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -162,6 +163,15 @@ app.MapGet("/error", () =>
 {
     throw new Exception("This is an example exception");
 });
+
+// FromQuery is a parameter binding attribute that tells the framework to bind the value of the query string parameter to the name parameter
+app.MapPost("/modelbinding", ([FromQuery]string? name) =>
+{
+    if (name is null) name = "Empty";    
+    return Results.Ok(name);    
+});
+
+
 
 // MapGroup: Define the genres endpoints, this is a group of endpoints that all start with /genres, and share the same base path
 // this makes it easier to manage the endpoints and keep them organized
