@@ -17,13 +17,14 @@ namespace MinimalAPIsMovies.Endpoints
 
         public static RouteGroupBuilder MapActors(this RouteGroupBuilder group)
         {
-            group.MapGet("/", GetAll).CacheOutput(x => x.Expire(TimeSpan.FromSeconds(30)).Tag("actors-tag"));
+            group.MapGet("/", GetAll).CacheOutput(x => x.Expire(TimeSpan.FromSeconds(30)).Tag("actors-get"));
             group.MapGet("/name/{name}", GetByName);
             group.MapGet("/{id:int}", GetById);
+
             // DisableAntiforgery is used to disable the antiforgery token validation for this endpoint, so that it works from a form
-            group.MapPost("/", Create).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateActorDTO>>();
-            group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateActorDTO>>();
-            group.MapDelete("/{id:int}", Delete);
+            group.MapPost("/", Create).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateActorDTO>>().RequireAuthorization("isadmin");
+            group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateActorDTO>>().RequireAuthorization("isadmin"); ;
+            group.MapDelete("/{id:int}", Delete).RequireAuthorization("isadmin"); ;
             return group;
         }
 

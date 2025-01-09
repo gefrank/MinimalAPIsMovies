@@ -80,6 +80,7 @@ builder.Services.AddScoped<IErrorsRepository, ErrorsRepository>();
 // AddTransient creates a new instance of the service each time it is requested
 builder.Services.AddTransient<IFileStorage, LocalFileStorage>(); // Register the InAppStorage class as the implementation for the IFileStorage interface
 builder.Services.AddHttpContextAccessor(); // So IFileStorage can access the HttpContext via injection
+builder.Services.AddTransient<IUsersService, UsersService>();
 
 
 builder.Services.AddAutoMapper(typeof(Program)); // Add AutoMapper to the services collection and look for conigurations automatically
@@ -90,18 +91,27 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 // Allows us to customize the response of the application when an exception is thrown
 builder.Services.AddProblemDetails();
 
-builder.Services.AddAuthentication().AddJwtBearer(x => 
-        x.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero,
-            IssuerSigningKeys = KeysHandler.GetAllRelevantKeys(builder.Configuration) // Allows you to use your own tokens as well as the ones submitted by the user, i.e. the user jwts tool.
-            //IssuerSigningKey = KeysHandler.GetKey(builder.Configuration).FirstOrDefault() // Use just your own tokens
-        });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthentication().AddJwtBearer(x =>
+{
+    // removes the default claim mapping, so that the claims are not mapped to the ClaimsPrincipal and you get a clean email claim
+    x.MapInboundClaims = false;
+
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ClockSkew = TimeSpan.Zero,
+        IssuerSigningKeys = KeysHandler.GetAllRelevantKeys(builder.Configuration) // Allows you to use your own tokens as well as the ones submitted by the user, i.e. the user jwts tool.
+                                                                                  //IssuerSigningKey = KeysHandler.GetKey(builder.Configuration).FirstOrDefault() // Use just your own tokens
+    };
+});
+builder.Services.AddAuthorization(x =>
+{
+    // Add a policy that requires the isadmin claim to be present in the token
+    x.AddPolicy("isadmin", policy => policy.RequireClaim("isadmin"));
+});
 
 // Services Zone - END
 

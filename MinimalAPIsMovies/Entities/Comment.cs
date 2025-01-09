@@ -1,9 +1,14 @@
-﻿namespace MinimalAPIsMovies.Entities
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace MinimalAPIsMovies.Entities
 {
     public class Comment
     {
         public int Id { get; set; }
         public string Body { get; set; } = null!;
         public int MovieId { get; set; }
+        public string UserId { get; set; } = null!;
+        // FK to users table
+        public IdentityUser User { get; set; } = null!;
     }
 }

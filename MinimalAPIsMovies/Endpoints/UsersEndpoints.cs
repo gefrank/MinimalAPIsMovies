@@ -17,6 +17,9 @@ namespace MinimalAPIsMovies.Endpoints
         {
             group.MapPost("/register", Register).AddEndpointFilter<ValidationFilter<UserCredentialsDTO>>();
             group.MapPost("/login", Login).AddEndpointFilter<ValidationFilter<UserCredentialsDTO>>();
+
+            group.MapPost("/makeadmin", MakeAdmin).AddEndpointFilter<ValidationFilter<EditClaimDTO>>().RequireAuthorization("isadmin");
+            group.MapPost("/removeadmin", RemoveAdmin).AddEndpointFilter<ValidationFilter<EditClaimDTO>>().RequireAuthorization("isadmin");
             return group;
         }
 
@@ -68,6 +71,33 @@ namespace MinimalAPIsMovies.Endpoints
                 return TypedResults.BadRequest("There was a problem with the email or the password");
             }
         }
+
+        static async Task<Results<NoContent, NotFound>> MakeAdmin(EditClaimDTO editClaimDTO,
+            [FromServices] UserManager<IdentityUser> userManager)
+        {
+            var user = await userManager.FindByEmailAsync(editClaimDTO.Email);
+            if (user is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            await userManager.AddClaimAsync(user, new Claim("isadmin", "Admin")); 
+            return TypedResults.NoContent();
+        }
+
+        static async Task<Results<NoContent, NotFound>>RemoveAdmin(EditClaimDTO editClaimDTO,
+            [FromServices] UserManager<IdentityUser> userManager)
+        {
+            var user = await userManager.FindByEmailAsync(editClaimDTO.Email);
+            if (user is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            await userManager.RemoveClaimAsync(user, new Claim("isadmin", "Admin"));
+            return TypedResults.NoContent();
+        }
+
 
         private async static Task<AuthenticationResponseDTO>
             BuildToken(UserCredentialsDTO userCredentialsDTO,
