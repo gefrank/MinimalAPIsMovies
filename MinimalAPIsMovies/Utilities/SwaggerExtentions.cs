@@ -62,6 +62,7 @@ namespace MinimalAPIsMovies.Utilities
                     Schema = new OpenApiSchema
                     {
                         Type = "string",
+                        // Enum is a list of OpenApiAny, adds a dropdown to the swagger UI
                         Enum = new List<IOpenApiAny> {
                             new OpenApiString("Title"),
                             new OpenApiString("ReleaseDate")

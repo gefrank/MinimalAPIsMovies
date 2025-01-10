@@ -5,12 +5,14 @@ using MinimalAPIsMovies.DTOs;
 using MinimalAPIsMovies.Entities;
 using MinimalAPIsMovies.Migrations;
 using System.Collections.Generic;
+using System.Linq.Dynamic.Core;
 
 namespace MinimalAPIsMovies.Repositories
 {
     public class MoviesRepository(IHttpContextAccessor httpContextAccessor,
                                   ApplicationDbContext context, 
-                                  IMapper mapper) : IMoviesRepository
+                                  IMapper mapper, 
+                                  ILogger<MoviesRepository> logger) : IMoviesRepository
     {
         public async Task<List<Movie>> GetAll(PaginationDTO pagination)
         {
@@ -131,21 +133,21 @@ namespace MinimalAPIsMovies.Repositories
                         .Contains(moviesFilterDTO.GenreId));
             }
 
-            //if (!string.IsNullOrEmpty(moviesFilterDTO.OrderByField))
-            //{
-            //    var orderKind = moviesFilterDTO.OrderByAscending ? "ascending" : "descending";
+            if (!string.IsNullOrEmpty(moviesFilterDTO.OrderByField))
+            {
+                var orderKind = moviesFilterDTO.OrderByAscending ? "ascending" : "descending";
 
-            //    try
-            //    {
-            //        // title ascending, title descending, releaseDate ascending
-            //        moviesQueryable = moviesQueryable
-            //            .OrderBy($"{moviesFilterDTO.OrderByField} {orderKind}");
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        logger.LogError(ex.Message, ex);
-            //    }
-            //}
+                try
+                {
+                    // title ascending, title descending, releaseDate ascending
+                    // Using System.Linq.Dynamic.Core, allows us to use strings to order by!!
+                    moviesQueryable = moviesQueryable.OrderBy($"{moviesFilterDTO.OrderByField} {orderKind}");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex.Message, ex);
+                }
+            }
 
 
             await httpContextAccessor.HttpContext!.InsertPaginationInResponseHeader(moviesQueryable);
