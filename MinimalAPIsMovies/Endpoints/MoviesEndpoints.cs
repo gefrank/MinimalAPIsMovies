@@ -11,7 +11,7 @@ using MinimalAPIsMovies.Utilities;
 
 namespace MinimalAPIsMovies.Endpoints
 {
-    public static class MoviesEndpoint
+    public static class MoviesEndpoints
     {
         // Creates a movie folder locally
         private readonly static string container = "movies";
@@ -20,6 +20,7 @@ namespace MinimalAPIsMovies.Endpoints
         {
             group.MapGet("/", GetAll).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("movies-get")).AddPaginationParameters();
             group.MapGet("/{id:int}", GetById);
+            group.MapPost("/filter", FilterMovies).AddMoviesFilterParameters();
 
             group.MapPost("/", Create).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateMovieDTO>>().RequireAuthorization("isadmin").WithOpenApi();
             group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilter<CreateMovieDTO>>().RequireAuthorization("isadmin").WithOpenApi();
@@ -167,6 +168,13 @@ namespace MinimalAPIsMovies.Endpoints
             await moviesRepository.Assign(id, actors);
             return TypedResults.NoContent();
 
+        }
+
+        static async Task<Ok<List<MovieDTO>>> FilterMovies(MoviesFilterDTO moviesFilterDTO, IMoviesRepository repository, IMapper mapper)
+        {
+            var movies = await repository.Filter(moviesFilterDTO);
+            var moviesDTO = mapper.Map<List<MovieDTO>>(movies);
+            return TypedResults.Ok(moviesDTO);
         }
 
 

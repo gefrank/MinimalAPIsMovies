@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MinimalAPIsMovies.DTOs;
 using MinimalAPIsMovies.Entities;
 using MinimalAPIsMovies.Migrations;
@@ -96,5 +97,62 @@ namespace MinimalAPIsMovies.Repositories
 
         }
 
+        /// <summary>
+        ///  Since EF Core works on a deferred execution model, which means we can build our query step by step and then execute at the end.
+        /// </summary>
+        /// <param name="moviesFilterDTO"></param>
+        /// <returns></returns>
+        public async Task<List<Movie>> Filter(MoviesFilterDTO moviesFilterDTO)
+        {
+            var moviesQueryable = context.Movies.AsQueryable();
+
+            if (!string.IsNullOrEmpty(moviesFilterDTO.Title))
+            {
+                moviesQueryable = moviesQueryable
+                    .Where(x => x.Title.Contains(moviesFilterDTO.Title));
+            }
+
+            if (moviesFilterDTO.InTheaters)
+            {
+                moviesQueryable = moviesQueryable.Where(x => x.InTheaters);
+            }
+
+            if (moviesFilterDTO.FutureReleases)
+            {
+                var today = DateTime.Today;
+                moviesQueryable = moviesQueryable.Where(x => x.ReleaseDate > today);
+            }
+
+            if (moviesFilterDTO.GenreId != 0)
+            {
+                moviesQueryable = moviesQueryable
+                    .Where(x => x.GenresMovies
+                        .Select(y => y.GenreId)
+                        .Contains(moviesFilterDTO.GenreId));
+            }
+
+            //if (!string.IsNullOrEmpty(moviesFilterDTO.OrderByField))
+            //{
+            //    var orderKind = moviesFilterDTO.OrderByAscending ? "ascending" : "descending";
+
+            //    try
+            //    {
+            //        // title ascending, title descending, releaseDate ascending
+            //        moviesQueryable = moviesQueryable
+            //            .OrderBy($"{moviesFilterDTO.OrderByField} {orderKind}");
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        logger.LogError(ex.Message, ex);
+            //    }
+            //}
+
+
+            await httpContextAccessor.HttpContext!.InsertPaginationInResponseHeader(moviesQueryable);
+
+            var movies = await moviesQueryable.Paginate(moviesFilterDTO.PaginationDTO).ToListAsync();
+
+            return movies;
+        }
     }
 }
