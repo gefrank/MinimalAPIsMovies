@@ -57,7 +57,11 @@ builder.Services.AddCors(options =>
 });
 
 // Activate output caching
-builder.Services.AddOutputCache();
+//builder.Services.AddOutputCache();
+builder.Services.AddStackExchangeRedisOutputCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("redis");
+});
 
 // Set up the OpenAPI/Swagger generator
 builder.Services.AddEndpointsApiExplorer();
