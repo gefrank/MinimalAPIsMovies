@@ -17,6 +17,8 @@ using MinimalAPIsMovies.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using MinimalAPIsMovies.Swagger;
+using Error = MinimalAPIsMovies.Entities.Error;
+using MinimalAPIsMovies.GraphQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+// Query type lives in the Query class
+builder.Services.AddGraphQLServer()
+    .AddQueryType<Query>()
+    .AddMutationType<Mutation>()
+    .AddAuthorization()
+    .AddProjections()
+    .AddFiltering()
+    .AddSorting();
+        
 builder.Services.AddIdentityCore<IdentityUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -208,6 +219,8 @@ app.UseCors();
 app.UseOutputCache();
 
 app.UseAuthorization();
+
+app.MapGraphQL();
 
 // Define the endpoints
 

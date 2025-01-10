@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Abstractions;
 using MinimalAPIsMovies.Entities;
+using Error = MinimalAPIsMovies.Entities.Error;
 
 namespace MinimalAPIsMovies
 {
